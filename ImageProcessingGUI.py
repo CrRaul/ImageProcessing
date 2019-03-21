@@ -46,10 +46,88 @@ class Window(Frame):
                     im2.itemset((shape[0] - i -1, j, k),(self.imageL.item(i, j, k)))
         self.imageR = im2
         self.updatePanelR()
+    
+
+    def swpRB(self):
+        shape = self.imageL.shape        
+
+        im2 = np.zeros((shape[0],shape[1],shape[2]), np.uint8)
+        
+        for i in range(0,shape[0]):
+            for j in range(0, shape[1]):
+                im2.itemset((i,j,0),self.imageL.item((i,j,2)))
+                im2.itemset((i,j,1),self.imageL.item((i,j,1)))
+                im2.itemset((i,j,2),self.imageL.item((i,j,0)))
+        
+        self.imageR = im2
+        self.updatePanelR()
+
+    # f(u) = 0    	      ,   0 <= u <= a
+    # f(u) = (u-a)/(b-a)*L    ,   a < u <= b
+    # f(u) = L    	      ,   b < u <= L
+    def reduceNoise(self):
+        shape = self.imageL.shape        
+
+        im2 = np.zeros((shape[0],shape[1],shape[2]), np.uint8)
+        
+        a = 10
+        b = 245
+        for i in range(0,shape[0]):
+            for j in range(0,shape[1]):
+                for k in range(0,shape[2]):
+                    if  self.imageL.item(i, j, k) < a:
+                        im2.itemset((i,j,k),0)
+                    elif self.imageL.item(i,j,k) > b: 
+                        im2.itemset((i,j,k),255)
+                    else:
+                        im2.itemset((i,j,k), (self.imageL.item(i,j,k)-a)/(b-a) * 255)
+                    
+                 
+        self.imageR = im2
+        self.updatePanelR()
+
+    
+    # f(u) = 0    	      ,   0 <= u <= a
+    # f(u) = L    	      ,   a < u <= L
+    def binarizare(self):
+        shape = self.imageL.shape        
+
+        im2 = np.zeros((shape[0],shape[1],shape[2]), np.uint8)
+        
+        a = 100
+
+        for i in range(0,shape[0]):
+            for j in range(0,shape[1]):
+                for k in range(0,shape[2]):
+                    if  self.imageL.item(i, j, k) < a:
+                        im2.itemset((i,j,k),0)
+                    elif self.imageL.item(i,j,k) >= a: 
+                        im2.itemset((i,j,k),255)
+                    
+                 
+        self.imageR = im2
+        self.updatePanelR()
+
+	
+    
+    def lab1BW(self):
+        shape = self.imageL.shape        
+
+        im2 = np.zeros((shape[0],shape[1],shape[2]), np.uint8)
+        
+        for i in range(0,shape[0]):
+            for j in range(0,shape[1]):
+                gray = self.imageL.item(i, j, 0) + self.imageL.item(i, j, 1) + self.imageL.item(i, j, 2)
+                gray /= 3
+                for k in range(0,shape[2]):
+                    im2.itemset((i, j, k),(gray))
+                 
+        self.imageR = im2
+        self.updatePanelR()
 ######################################################    ^  
-
-
-
+#
+#  a2  b  g  
+#
 ######################################################    v	GUI 
     # swap self.imageL <-> self.imageR
     # to make quickly operation on imageR
@@ -120,6 +198,10 @@ class Window(Frame):
         editmenu = Menu(menubar, tearoff=0) 
         editmenu.add_command(label="flipH", command=self.lab1flipH)
         editmenu.add_command(label="flipV", command=self.lab1flipV)
+        editmenu.add_command(label="swapR-B", command=self.swpRB)
+        editmenu.add_command(label="reduNoise", command=self.reduceNoise)
+        editmenu.add_command(label="binarizare", command=self.binarizare)
+        editmenu.add_command(label="BW", command=self.lab1BW)
         menubar.add_cascade(label="lab1", menu=editmenu)
 
         # display the menu
